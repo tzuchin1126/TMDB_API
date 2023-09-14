@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMDb電影搜尋</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+        }
+        .container > div {
+            border: 1px #34beae solid;
+            flex-grow: 1;
+            padding: 20px;
+            box-shadow: 110px 0 10px #62C3B8(0, 0, 0, 0.1);
+        }
+        .box {
+            width: 800px;
+            height: 100%;
+            background-color: #193e5c;
+            margin: 0 auto;
+            text-align: center;
+            padding: 20px; 
+            border-radius: 10px; 
+        }
+        h1,h3{
+            color:#34beae;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="box p-4">
+            <h1 class="mb-4">TMDb電影搜尋</h1>
+            <form class="mb-4">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="電影名稱...">
+                    <button type="submit" class="btn btn-primary ">搜尋</button>
+                </div>
+            </form>
+            <div class="container">
+                <h3 class="mb-3">顯示結果</h3>
+                <div class="row row-cols-1 row-cols-md-3 g-6 tmdb-result"></div>
+            </div>
+        </div>
+    </div>
+ 
+    <!-- JavaScript -->
+    <script>
+        // 取得表單、輸入框和結果容器的參考
+        const form = document.querySelector("form");
+        const input = document.querySelector('input[type="text"]');
+        const resultT = document.querySelector(".tmdb-result");
+
+        // 創建電影結果項目
+        function movieResult(poster, name, year) {
+            const resultItem = document.createElement("div");
+            resultItem.classList.add("col");
+
+            const innerHTML = `
+                <div class="card">
+                    <img src="${poster}" class="card-img-top" alt="${name}">
+                    <div class="card-body">
+                        <h5 class="card-title">${name}</h5>
+                        <p class="card-text">${year}</p>
+                    </div>
+                </div>
+            `;
+
+            resultItem.innerHTML = innerHTML;
+
+            resultT.appendChild(resultItem);
+        }
+
+        // 處理搜尋表單提交
+        async function search(e) {
+            e.preventDefault();
+            resultT.innerHTML = "";
+            const searchTitle = input.value;
+
+            try {
+                await makeTRequest(searchTitle);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+
+            input.value = "";
+        }
+
+        // 定義 TMDb 的 API 金鑰和 URL
+        const apiKeyT = "082af48ed8d20fdc9c5b7b2a00b73003";
+        const urlT = "https://api.themoviedb.org/3/search/movie?api_key=" + apiKeyT + "&query=";
+
+        // 透過 TMDb API 發起請求並處理結果
+        async function makeTRequest(searchTitle) {
+            try {
+                const response = await fetch(urlT + searchTitle);
+                const data = await response.json();
+                data.results.forEach(item => {
+                    movieResult(
+                        "https://image.tmdb.org/t/p/w300/" + item.poster_path,
+                        item.title,
+                        item.release_date
+                    );
+                });
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // 監聽表單提交事件
+        form.addEventListener("submit", search);
+    </script>
+</body>
+</html>
